@@ -88,7 +88,14 @@ Update `appsettings.json` or use environment-specific configuration:
 }
 ```
 
-Do not commit real database passwords or production secrets.
+For local development, keep the committed value as a placeholder and provide the real connection string through an environment variable:
+
+```bash
+# PowerShell
+$env:ConnectionStrings__PostgreSQL="Host=localhost;Port=5432;Database=digital_payment;Username=postgres;Password=your_password"
+```
+
+ASP.NET Core maps the double underscore to `ConnectionStrings:PostgreSQL`. Do not commit real database passwords or production secrets.
 
 ### 4. Start the backend services
 
