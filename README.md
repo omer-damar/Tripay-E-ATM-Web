@@ -1,102 +1,137 @@
-# 💳 Dijital Ödeme Sistemleri
+# Tripay E-ATM — Web
 
-Bu proje, **çok katmanlı servis odaklı mimari (SOA)** kullanılarak geliştirilmiş bir
-**dijital cüzdan / ödeme sistemi** uygulamasıdır.
+> ASP.NET Core MVC frontend for a multi-service digital wallet and E-ATM system.
 
-Proje kapsamında **REST, gRPC ve SOAP** servisleri birlikte kullanılmış,
-ileri seviye **veritabanı tasarımı**, **yetkilendirme** ve **backend mimarisi**
-uygulanmıştır.
+![ASP.NET Core](https://img.shields.io/badge/ASP.NET%20Core-MVC-512BD4?logo=dotnet)
+![C#](https://img.shields.io/badge/C%23-.NET%2010-239120?logo=csharp)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/UI-Bootstrap-7952B3?logo=bootstrap&logoColor=white)
 
----
+This repository contains the web application and database setup for Tripay E-ATM. Its Node.js REST, gRPC and SOAP services are maintained in the companion [Tripay-E-ATM-Services repository](https://github.com/omer-damar/Tripay-E-ATM-Services).
 
-## 🧠 Genel Mimari
+## Features
 
-- 6 Katmanlı SOA mimarisi
-- REST API (Node.js + Express)
-- JWT Authentication
-- gRPC servisleri
-- SOAP servisleri
-- PostgreSQL ilişkisel veritabanı
+- Registration and login flow
+- Cookie-based web session with JWT-backed service access
+- User and administrator views
+- Multi-currency account management
+- Deposit and withdrawal workflows
+- Transaction summaries and recent-transaction ViewComponent
+- Exchange-rate screen backed by the Node.js service
+- Account, user and transaction administration
+- PostgreSQL-based data layer
 
----
+## Architecture
 
-## 🗄️ Veritabanı Tasarımı
+```text
+Browser
+   |
+   v
+ASP.NET Core MVC web app
+   |
+   +--> PostgreSQL
+   |
+   +--> Node.js REST API --> auth, accounts, exchange rates
+                           +--> gRPC WalletService
+                           +--> SOAP WalletService
+```
 
-- RDBMS: **PostgreSQL**
-- En az **6 farklı varlık (entity)** kullanımı
-- Normalizasyon kurallarına uygun tasarım
-- Veri bütünlüğü için:
-  - Primary Key
-  - Foreign Key
-  - Unique Constraint
-  - Check Constraint  
-  (en az 3 farklı türde, toplam 5 adet)
-- Performans için indeksleme stratejileri
-- En az:
-  - **5 View**
-  - **2 Stored Procedure**
-  - **2 User Defined Function**
-- Rol bazlı yetkilendirme
-- Veri maskeleme ve erişim kısıtları
+## Tech Stack
 
----
+| Area | Technologies |
+|---|---|
+| Web | ASP.NET Core MVC, C#, Razor Views |
+| UI | Bootstrap, CSS, JavaScript |
+| Authentication | Cookie authentication + JWT service token |
+| Data | PostgreSQL, Npgsql |
+| Integration | HttpClient, REST, gRPC, SOAP |
 
-##🧑‍💻 Web Uygulaması (MVC)
+## Getting Started
 
--En az 5 farklı Controller
--Her Controller’da 3 farklı Action
--PartialView / ViewComponent kullanımı
--Dinamik View yapısı
--Ortak Layout (en az 3 View’da kullanılmış)
--CRUD işlemleri
--En az 2 farklı kullanıcı tipi
--Rol bazlı içerik gösterimi
--ViewBag / ViewData / TempData ile veri aktarımı
+### Prerequisites
 
----
+- .NET 10 SDK
+- PostgreSQL
+- Node.js 18+ for the companion services
 
-## 🔌 Servisler
+### 1. Clone both repositories
 
-### 🌐 REST API
-- Express.js
-- JWT Authentication
-- CRUD işlemleri
-- Rol bazlı yetkilendirme
+```bash
+git clone https://github.com/omer-damar/Tripay-E-ATM-Web.git
+git clone https://github.com/omer-damar/Tripay-E-ATM-Services.git
+```
 
-### ⚡ gRPC Servisi
+### 2. Prepare PostgreSQL
 
-WalletService
-Proto dosyası: proto/wallet.proto
-Desteklenen metotlar:
--GetAccountBalance
--Deposit
-Çalıştırma:
-npm run grpc-server
+Create a `digital_payment` database, then run:
 
-###🧼 SOAP Servisi
+```bash
+psql -U postgres -d digital_payment -f database_setup.sql
+```
 
-WalletService
-Desteklenen operasyon:
-GetAccountBalance(accountId)
-WSDL:
-http://localhost:3001/wsdl
-Çalıştırma:
-npm run soap-server
+The setup script contains demonstration users and balances. Review or remove seed data before using the project outside a local development environment.
 
+### 3. Configure the web application
 
-###⚙️ ÇALIŞTIRMA
+Update `appsettings.json` or use environment-specific configuration:
 
-Komutlar:
-  npm install
-  npm run dev         -> REST API (Express, JWT Auth)
-  npm run grpc-server -> gRPC sunucusu (WalletService)
-  npm run soap-server -> SOAP sunucusu (WalletService)
+```json
+{
+  "ConnectionStrings": {
+    "PostgreSQL": "Host=localhost;Port=5432;Database=digital_payment;Username=postgres;Password=your_password"
+  },
+  "NodeApiSettings": {
+    "BaseUrl": "http://localhost:3000",
+    "GrpcUrl": "http://localhost:50051",
+    "SoapUrl": "http://localhost:3001"
+  }
+}
+```
 
-gRPC:
-  - proto/wallet.proto dosyasindaki WalletService:
-    * GetAccountBalance
-    * Deposit
+Do not commit real database passwords or production secrets.
 
-SOAP:
-  - Tek operasyon: GetAccountBalance(accountId)
-  - WSDL: http://localhost:3001/wsdl
+### 4. Start the backend services
+
+Follow the instructions in [Tripay-E-ATM-Services](https://github.com/omer-damar/Tripay-E-ATM-Services) and start the REST service. Start gRPC and SOAP as needed for those integration scenarios.
+
+### 5. Run the web application
+
+```bash
+cd Tripay-E-ATM-Web
+dotnet restore
+dotnet run --project digitalpayment3.csproj
+```
+
+Use the local URL printed by ASP.NET Core.
+
+## Main Areas
+
+| Area | Purpose |
+|---|---|
+| `Auth` | Registration and login |
+| `Account` | Account CRUD and account details |
+| `Transaction` | Deposit, withdrawal and summaries |
+| `Admin` | User, account, transaction and report views |
+| `NodeApi` | Screens that exercise the Node.js service layer |
+
+## Project Structure
+
+```text
+Tripay-E-ATM-Web/
+├── Controllers/             # MVC controllers
+├── Data/                    # PostgreSQL repositories
+├── Models/                  # View models
+├── Services/                # Node.js API client and settings
+├── ViewComponents/          # Reusable server-rendered components
+├── Views/                   # Razor views
+├── wwwroot/                 # CSS, JavaScript and vendor assets
+├── database_setup.sql       # Local database setup and seed data
+└── Program.cs               # Application bootstrap
+```
+
+## Related Documentation
+
+- [Detailed project criteria report](PROJE_KRITER_RAPORU_DETAYLI.md)
+- [Project criteria summary](KRITER_RAPORU_OZET.md)
+- [Implemented features](YENI_OZELLIKLER.md)
+
